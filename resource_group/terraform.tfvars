@@ -1,2 +1,4 @@
-rg-name = "RG-1"
-rg-location = "westus"
+rg-names = {
+    dev-rg = "westus"
+    prod-rg = "eastus"
+}
