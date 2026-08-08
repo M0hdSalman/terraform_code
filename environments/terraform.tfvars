@@ -1,26 +1,26 @@
 rgs = {
   rg1 = {
     name     = "dev-rg1"
-    location = "westus2"
+    location = "japaneast"
   }
 
   rg2 = {
     name     = "dev-rg2"
-    location = "westus2"
+    location = "japaneast"
   }
 }
 
 vnets = {
   vnet1 = {
     name                = "dev-vnet1"
-    location            = "westus2"
+    location            = "japaneast"
     resource_group_name = "rg1"
     address_space       = ["10.1.0.0/16"]
   }
 
   vnet2 = {
     name                = "dev-vnet2"
-    location            = "westus2"
+    location            = "japaneast"
     resource_group_name = "rg1"
     address_space       = ["10.2.0.0/16"]
   }
@@ -45,14 +45,14 @@ subnets = {
 pips = {
   pip1 = {
     name                = "frontend-nic-pip"
-    location            = "westus2"
+    location            = "japaneast"
     resource_group_name = "rg1"
     allocation_method   = "Static"
   }
 
   pip2 = {
     name                = "backend-nic-pip"
-    location            = "westus2"
+    location            = "japaneast"
     resource_group_name = "rg1"
     allocation_method   = "Static"
   }
@@ -61,7 +61,7 @@ pips = {
 nics = {
   nic1 = {
     name                          = "frontend-vm-nic"
-    location                      = "westus2"
+    location                      = "japaneast"
     resource_group_name           = "rg1"
     ip_config_name                = "internal"
     subnet_id                     = "subnet1"
@@ -71,7 +71,7 @@ nics = {
 
   nic2 = {
     name                          = "backend-vm-nic"
-    location                      = "westus2"
+    location                      = "japaneast"
     resource_group_name           = "rg1"
     ip_config_name                = "internal"
     subnet_id                     = "subnet2"
@@ -84,8 +84,8 @@ vms = {
   vm1 = {
     vm_name              = "frontend-vm"
     resource_group_name  = "rg1"
-    location             = "westus2"
-    size                 = "Standard_D2s_v3"
+    location             = "japaneast"
+    size                 = "Standard_B2als_v2"
     admin_username       = "azureuser"
     admin_password       = "Azure@123456"
     nic_id               = "nic1"
@@ -100,8 +100,8 @@ vms = {
   vm2 = {
     vm_name              = "backend-vm"
     resource_group_name  = "rg1"
-    location             = "westus2"
-    size                 = "Standard_D2s_v3"
+    location             = "japaneast"
+    size                 = "Standard_B2als_v2"
     admin_username       = "azureuser"
     admin_password       = "Azure@123456"
     nic_id               = "nic2"
@@ -117,13 +117,13 @@ vms = {
 nsg = {
   nsg1 = {
     nsg_name            = "frontend_nsg"
-    location            = "westus2"
+    location            = "japaneast"
     resource_group_name = "rg1"
   }
 
   nsg1 = {
     nsg_name            = "backend_nsg"
-    location            = "westus2"
+    location            = "japaneast"
     resource_group_name = "rg1"
   }
 }
