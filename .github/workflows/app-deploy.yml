@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Download VM details from previous workflow
+      # Download VM details from Infra workflow
       - name: Download VM Info
         uses: dawidd6/action-download-artifact@v9
         with:
@@ -20,7 +20,7 @@ jobs:
           name: vm-info
           path: .
 
-      # Load variables
+      # Load VM variables
       - name: Load VM Variables
         run: |
           source vm.env
@@ -45,7 +45,7 @@ jobs:
         run: |
           sshpass -p "$VM_PASSWORD" scp -o StrictHostKeyChecking=no -r app/* $VM_USER@$VM_HOST:/home/$VM_USER/app/
 
-      # Deploy application
+      # Deploy application on VM
       - name: Deploy React App
         env:
           VM_PASSWORD: ${{ secrets.VM_PASSWORD }}
@@ -59,8 +59,22 @@ jobs:
             sudo systemctl enable docker
             sudo systemctl start docker
 
-            mkdir -p /home/azureuser/app
-            cd /home/azureuser/app
+            echo "===== APP DIRECTORY ====="
+            ls -la /home/azureuser/app
+
+            echo "===== SEARCH DOCKERFILE ====="
+            find /home/azureuser/app -name Dockerfile
+
+            APP_DIR=$(find /home/azureuser/app -name Dockerfile | head -1 | xargs dirname)
+
+            if [ -z "$APP_DIR" ]; then
+              echo "Dockerfile not found!"
+              exit 1
+            fi
+
+            echo "Using APP_DIR=$APP_DIR"
+
+            cd "$APP_DIR"
 
             sudo docker rm -f react-todo || true
 
@@ -72,10 +86,11 @@ jobs:
               --restart always \
               react-todo:latest
 
+            echo "===== RUNNING CONTAINERS ====="
             sudo docker ps
           EOF
 
-      # Print final URL
+      # Print application URL
       - name: Print Application URL
         run: |
           echo "Application deployed successfully"
