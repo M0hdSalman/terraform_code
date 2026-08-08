@@ -97,7 +97,7 @@ jobs:
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         run: terraform apply -auto-approve tfplan
 
-      # Capture VM Outputs
+      # Capture VM Output
       - name: Capture VM Outputs
   env:
     ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
