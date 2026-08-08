@@ -99,20 +99,20 @@ jobs:
 
       # Capture VM Outputs
       - name: Capture VM Outputs
-        env:
-          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-        run: |
-          VM_HOST=$(terraform output -json vm_public_ips | jq -r '.vm1_pip')
-          VM_USER=$(terraform output -json vm_admin_usernames | jq -r '.vm1')
+  env:
+    ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+    ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+    ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+  run: |
+    VM_HOST=$(terraform output -json vm_public_ips | jq -r 'to_entries[0].value')
+    VM_USER=$(terraform output -json vm_admin_usernames | jq -r 'to_entries[0].value')
 
-          echo "VM_HOST=$VM_HOST" > vm.env
-          echo "VM_USER=$VM_USER" >> vm.env
+    echo "VM_HOST=$VM_HOST" > vm.env
+    echo "VM_USER=$VM_USER" >> vm.env
 
-          echo "Captured VM Details:"
-          cat vm.env
+    echo "Captured VM Details:"
+    cat vm.env
 
       # Upload artifact for next workflow
       - name: Upload VM Info Artifact
