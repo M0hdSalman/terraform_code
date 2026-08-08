@@ -116,14 +116,14 @@ vms = {
 
 nsg = {
   nsg1 = {
-    nsg_name = "frontend_nsg"
-    location = "westus2"
+    nsg_name            = "frontend_nsg"
+    location            = "westus2"
     resource_group_name = "rg1"
   }
 
   nsg1 = {
-    nsg_name = "backend_nsg"
-    location = "westus2"
+    nsg_name            = "backend_nsg"
+    location            = "westus2"
     resource_group_name = "rg1"
   }
 }

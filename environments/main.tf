@@ -40,7 +40,7 @@ module "virtual_machine" {
 }
 
 module "network_security" {
-  source = "../modules/azurerm_network_security_group"
-  nsg = var.nsg
+  source   = "../modules/azurerm_network_security_group"
+  nsg      = var.nsg
   rg_names = module.resource_group.rg_names
 }

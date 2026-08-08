@@ -5,5 +5,5 @@ variable "pips" {}
 variable "nics" {}
 variable "vms" {}
 variable "nsg" {
-  
+
 }
