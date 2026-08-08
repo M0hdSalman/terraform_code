@@ -23,6 +23,7 @@ jobs:
         working-directory: environments
 
     steps:
+      # Checkout code
       - name: Checkout Repository
         uses: actions/checkout@v4
 
@@ -44,22 +45,35 @@ jobs:
         with:
           terraform_version: 1.9.8
 
-      # Code Quality
+      # Terraform Format Check
       - name: Terraform Format Check
         run: terraform fmt -check -recursive
 
+      # Terraform Init (Remote Backend Auth)
       - name: Terraform Init
-        run: terraform init
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+        run: terraform init -input=false
 
+      # Terraform Validate
       - name: Terraform Validate
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         run: terraform validate
 
-      # Security Scan
+      # Security Scan - tfsec
       - name: Run tfsec
         uses: aquasecurity/tfsec-action@v1.0.3
         with:
           working_directory: environments
 
+      # Secret Scan - Gitleaks
       - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@v2
         env:
@@ -67,14 +81,29 @@ jobs:
 
       # Terraform Plan
       - name: Terraform Plan
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         run: terraform plan -out=tfplan
 
       # Terraform Apply
       - name: Terraform Apply
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         run: terraform apply -auto-approve tfplan
 
-      # Capture VM outputs dynamically
+      # Capture VM Outputs
       - name: Capture VM Outputs
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         run: |
           VM_HOST=$(terraform output -json vm_public_ips | jq -r '.vm1_pip')
           VM_USER=$(terraform output -json vm_admin_usernames | jq -r '.vm1')
@@ -82,6 +111,7 @@ jobs:
           echo "VM_HOST=$VM_HOST" > vm.env
           echo "VM_USER=$VM_USER" >> vm.env
 
+          echo "Captured VM Details:"
           cat vm.env
 
       # Upload artifact for next workflow
