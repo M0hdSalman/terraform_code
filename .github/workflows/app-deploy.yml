@@ -12,7 +12,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Download VM details from Infra workflow
       - name: Download VM Info
         uses: dawidd6/action-download-artifact@v9
         with:
@@ -20,32 +19,15 @@ jobs:
           name: vm-info
           path: .
 
-      # Load VM variables
       - name: Load VM Variables
         run: |
           source vm.env
           echo "VM_HOST=$VM_HOST" >> $GITHUB_ENV
           echo "VM_USER=$VM_USER" >> $GITHUB_ENV
 
-      # Checkout application repository
-      - name: Checkout App Repository
-        uses: actions/checkout@v4
-        with:
-          repository: devopsinsiders/ReactTodoUIMonolith
-          path: app
-
-      # Install sshpass
       - name: Install sshpass
         run: sudo apt-get update && sudo apt-get install -y sshpass
 
-      # Copy application to VM
-      - name: Copy Application
-        env:
-          VM_PASSWORD: ${{ secrets.VM_PASSWORD }}
-        run: |
-          sshpass -p "$VM_PASSWORD" scp -o StrictHostKeyChecking=no -r app/* $VM_USER@$VM_HOST:/home/$VM_USER/app/
-
-      # Deploy application on VM
       - name: Deploy React App
         env:
           VM_PASSWORD: ${{ secrets.VM_PASSWORD }}
@@ -54,25 +36,28 @@ jobs:
             set -e
 
             sudo apt-get update
-            sudo apt-get install -y docker.io
+            sudo apt-get install -y docker.io git
 
             sudo systemctl enable docker
             sudo systemctl start docker
 
-            echo "===== APP DIRECTORY ====="
-            ls -la /home/azureuser/app
+            rm -rf /home/azureuser/react-app
+            git clone https://github.com/devopsinsiders/ReactTodoUIMonolith.git /home/azureuser/react-app
 
-            echo "===== SEARCH DOCKERFILE ====="
-            find /home/azureuser/app -name Dockerfile
+            echo "===== REPO STRUCTURE ====="
+            find /home/azureuser/react-app -maxdepth 3 -type f | head -50
 
-            APP_DIR=$(find /home/azureuser/app -name Dockerfile | head -1 | xargs dirname)
+            DOCKERFILE=$(find /home/azureuser/react-app -name Dockerfile | head -1)
 
-            if [ -z "$APP_DIR" ]; then
-              echo "Dockerfile not found!"
+            if [ -z "$DOCKERFILE" ]; then
+              echo "Dockerfile not found in repository"
               exit 1
             fi
 
-            echo "Using APP_DIR=$APP_DIR"
+            APP_DIR=$(dirname "$DOCKERFILE")
+
+            echo "Using Dockerfile: $DOCKERFILE"
+            echo "Using APP_DIR: $APP_DIR"
 
             cd "$APP_DIR"
 
@@ -90,7 +75,6 @@ jobs:
             sudo docker ps
           EOF
 
-      # Print application URL
       - name: Print Application URL
         run: |
           echo "Application deployed successfully"
