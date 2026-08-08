@@ -32,7 +32,7 @@ resource "azurerm_network_security_group" "example" {
 
  # ReactApp Rule
   security_rule {
-    name                       = "Allow-HTTP"
+    name                       = "Allow-App"
     priority                   = 140
     direction                  = "Inbound"
     access                     = "Allow"
