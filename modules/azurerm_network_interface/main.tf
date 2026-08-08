@@ -11,3 +11,10 @@ resource "azurerm_network_interface" "nic" {
     private_ip_address_allocation = each.value.private_ip_address_allocation
   }
 }
+
+resource "azurerm_network_interface_security_group_association" "nsg_assoc" {
+  for_each = var.nics
+
+  network_interface_id      = azurerm_network_interface.nic[each.key].id
+  network_security_group_id = var.nsg_id[each.value.nsg_name]
+}

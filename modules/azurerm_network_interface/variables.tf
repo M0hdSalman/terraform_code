@@ -22,3 +22,7 @@ variable "pip_id" {
 variable "subnet_id" {
     type = map(string)
 }
+
+variable "nsg_id" {
+  type = map(string)
+}

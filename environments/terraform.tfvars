@@ -116,14 +116,20 @@ vms = {
 
 nsg = {
   nsg1 = {
-    nsg_name            = "frontend_nsg"
+    nic_name            = "frontend-nic"
     location            = "japaneast"
     resource_group_name = "rg1"
+    subnet_name         = "subnet1"
+    pip_name            = "pip1"
+    nsg_name            = "nsg1"
   }
 
-  nsg1 = {
-    nsg_name            = "backend_nsg"
+  nsg2 = {
+    nic_name            = "backend-nic"
     location            = "japaneast"
     resource_group_name = "rg1"
+    subnet_name         = "subnet2"
+    pip_name            = "pip2"
+    nsg_name            = "nsg2"
   }
 }

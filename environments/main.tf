@@ -29,6 +29,7 @@ module "network-interface" {
   rg_names  = module.resource_group.rg_names
   subnet_id = module.subnet.subnet_id
   pip_id    = module.public_ip.pip_id
+  nsg_id    = module.network_security.nsg_id
 }
 
 module "virtual_machine" {
