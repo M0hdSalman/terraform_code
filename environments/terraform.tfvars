@@ -67,6 +67,7 @@ nics = {
     subnet_id                     = "subnet1"
     public_ip_address_id          = "pip1"
     private_ip_address_allocation = "Dynamic"
+    nsg_name                      = "nsg1"
   }
 
   nic2 = {
@@ -77,6 +78,7 @@ nics = {
     subnet_id                     = "subnet2"
     public_ip_address_id          = "pip2"
     private_ip_address_allocation = "Dynamic"
+    nsg_name                      = "nsg2"
   }
 }
 
