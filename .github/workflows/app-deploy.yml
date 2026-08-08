@@ -1,0 +1,83 @@
+name: App Deploy
+
+on:
+  workflow_run:
+    workflows: ["Infra Deploy"]
+    types:
+      - completed
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      # Download VM details from previous workflow
+      - name: Download VM Info
+        uses: dawidd6/action-download-artifact@v9
+        with:
+          workflow: infra.yml
+          name: vm-info
+          path: .
+
+      # Load variables
+      - name: Load VM Variables
+        run: |
+          source vm.env
+          echo "VM_HOST=$VM_HOST" >> $GITHUB_ENV
+          echo "VM_USER=$VM_USER" >> $GITHUB_ENV
+
+      # Checkout application repository
+      - name: Checkout App Repository
+        uses: actions/checkout@v4
+        with:
+          repository: devopsinsiders/ReactTodoUIMonolith
+          path: app
+
+      # Install sshpass
+      - name: Install sshpass
+        run: sudo apt-get update && sudo apt-get install -y sshpass
+
+      # Copy application to VM
+      - name: Copy Application
+        env:
+          VM_PASSWORD: ${{ secrets.VM_PASSWORD }}
+        run: |
+          sshpass -p "$VM_PASSWORD" scp -o StrictHostKeyChecking=no -r app/* $VM_USER@$VM_HOST:/home/$VM_USER/app/
+
+      # Deploy application
+      - name: Deploy React App
+        env:
+          VM_PASSWORD: ${{ secrets.VM_PASSWORD }}
+        run: |
+          sshpass -p "$VM_PASSWORD" ssh -o StrictHostKeyChecking=no $VM_USER@$VM_HOST << 'EOF'
+            set -e
+
+            sudo apt-get update
+            sudo apt-get install -y docker.io
+
+            sudo systemctl enable docker
+            sudo systemctl start docker
+
+            mkdir -p /home/azureuser/app
+            cd /home/azureuser/app
+
+            sudo docker rm -f react-todo || true
+
+            sudo docker build -t react-todo:latest .
+
+            sudo docker run -d \
+              --name react-todo \
+              -p 3000:3000 \
+              --restart always \
+              react-todo:latest
+
+            sudo docker ps
+          EOF
+
+      # Print final URL
+      - name: Print Application URL
+        run: |
+          echo "Application deployed successfully"
+          echo "React App URL: http://$VM_HOST:3000"
+          echo "Nginx URL: http://$VM_HOST"
