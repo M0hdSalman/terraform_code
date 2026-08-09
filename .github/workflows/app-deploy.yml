@@ -30,77 +30,14 @@ steps:
   - name: Install sshpass
     run: sudo apt-get update && sudo apt-get install -y sshpass
 
-  - name: Deploy React App
+  - name: Test SSH
     env:
       VM_PASSWORD: ${{ secrets.VM_PASSWORD }}
     run: |
-      sshpass -p "$VM_PASSWORD" ssh -o StrictHostKeyChecking=no $VM_USER@$VM_HOST << 'EOF'
-        set -euxo pipefail
+      sshpass -p "$VM_PASSWORD" ssh -o StrictHostKeyChecking=no $VM_USER@$VM_HOST "echo SSH_OK"
 
-        echo "===== INSTALLING PACKAGES ====="
-        sudo apt-get update
-        sudo apt-get install -y docker.io git curl tar
-
-        sudo systemctl enable docker
-        sudo systemctl start docker
-
-        echo "===== INSTALLING NODE 20 ====="
-        cd /tmp
-        curl -fsSL https://nodejs.org/dist/v20.19.4/node-v20.19.4-linux-x64.tar.xz -o node.tar.xz
-        sudo rm -rf /usr/local/lib/nodejs
-        sudo mkdir -p /usr/local/lib/nodejs
-        sudo tar -xJf node.tar.xz -C /usr/local/lib/nodejs
-
-        echo 'export PATH=/usr/local/lib/nodejs/node-v20.19.4-linux-x64/bin:$PATH' | sudo tee /etc/profile.d/nodejs.sh > /dev/null
-        export PATH=/usr/local/lib/nodejs/node-v20.19.4-linux-x64/bin:$PATH
-
-        node -v
-        npm -v
-
-        echo "===== CLONING REPOSITORY ====="
-        rm -rf /home/azureuser/react-app
-        git clone https://github.com/devopsinsiders/ReactTodoUIMonolith.git /home/azureuser/react-app
-
-        cd /home/azureuser/react-app
-
-        echo "===== INSTALLING DEPENDENCIES ====="
-        npm ci
-
-        echo "===== BUILDING REACT APP ====="
-        npm run build
-
-        test -d build
-
-        echo "===== CREATING DOCKERFILE ====="
-        cat > Dockerfile << 'DOCKERFILE'
-        FROM nginx:alpine
-        COPY build/ /usr/share/nginx/html
-        EXPOSE 80
-        CMD ["nginx", "-g", "daemon off;"]
-        DOCKERFILE
-
-        echo "===== BUILDING IMAGE ====="
-        sudo docker build -t react-todo:latest .
-
-        echo "===== RESTARTING CONTAINER ====="
-        sudo docker rm -f react-todo || true
-
-        sudo docker run -d \
-          --name react-todo \
-          -p 3000:80 \
-          --restart always \
-          react-todo:latest
-
-        echo "===== CONTAINER STATUS ====="
-        sudo docker ps
-
-        echo "===== LOCAL HEALTH CHECK ====="
-        curl -I http://localhost:3000
-      EOF
-
-  - name: Print Application URL
+  - name: Print URL
     run: |
-      echo "Application deployed successfully"
-      echo "React App URL: http://$VM_HOST:3000"
-      echo "Nginx URL: http://$VM_HOST"
+      echo "Workflow syntax is valid"
+      echo "VM = $VM_HOST"
 ```
