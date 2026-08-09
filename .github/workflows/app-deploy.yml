@@ -99,4 +99,3 @@ steps:
       echo "Application deployed successfully"
       echo "React App URL: http://$VM_HOST:3000"
       echo "Nginx URL: http://$VM_HOST"
-```
