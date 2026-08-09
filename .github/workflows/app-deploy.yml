@@ -1,101 +1,96 @@
 name: App Deploy
 
 on:
-workflow_run:
-workflows: ["Infra Deploy"]
-types:
-- completed
+  workflow_run:
+    workflows:
+      - Infra Deploy
+    types:
+      - completed
 
 jobs:
-deploy:
-if: ${{ github.event.workflow_run.conclusion == 'success' }}
-runs-on: ubuntu-latest
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
 
-```
-steps:
-  # Download VM details from Infra workflow
-  - name: Download VM Info
-    uses: dawidd6/action-download-artifact@v9
-    with:
-      workflow: infra.yml
-      name: vm-info
-      path: .
+    steps:
+      - name: Download VM Info
+        uses: dawidd6/action-download-artifact@v9
+        with:
+          workflow: infra.yml
+          name: vm-info
+          path: .
 
-  # Load VM variables
-  - name: Load VM Variables
-    run: |
-      source vm.env
-      echo "VM_HOST=$VM_HOST" >> $GITHUB_ENV
-      echo "VM_USER=$VM_USER" >> $GITHUB_ENV
+      - name: Load VM Variables
+        run: |
+          source vm.env
+          echo "VM_HOST=$VM_HOST" >> $GITHUB_ENV
+          echo "VM_USER=$VM_USER" >> $GITHUB_ENV
 
-  # Install sshpass
-  - name: Install sshpass
-    run: sudo apt-get update && sudo apt-get install -y sshpass
+      - name: Install sshpass
+        run: sudo apt-get update && sudo apt-get install -y sshpass
 
-  # Deploy application on VM
-  - name: Deploy React App
-    env:
-      VM_PASSWORD: ${{ secrets.VM_PASSWORD }}
-    run: |
-      sshpass -p "$VM_PASSWORD" ssh -o StrictHostKeyChecking=no $VM_USER@$VM_HOST << 'EOF'
-        set -e
+      - name: Deploy React App
+        env:
+          VM_PASSWORD: ${{ secrets.VM_PASSWORD }}
+        run: |
+          sshpass -p "$VM_PASSWORD" ssh -o StrictHostKeyChecking=no $VM_USER@$VM_HOST << 'EOF'
+            set -e
 
-        echo "===== INSTALLING PACKAGES ====="
-        sudo apt-get update
-        sudo apt-get install -y docker.io git curl
+            echo "===== INSTALLING PACKAGES ====="
+            sudo apt-get update
+            sudo apt-get install -y docker.io git curl
 
-        sudo systemctl enable docker
-        sudo systemctl start docker
+            sudo systemctl enable docker
+            sudo systemctl start docker
 
-        echo "===== INSTALLING NODE.JS ====="
-        curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-        sudo apt-get install -y nodejs
+            echo "===== INSTALLING NODE.JS ====="
+            curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+            sudo apt-get install -y nodejs
 
-        node -v
-        npm -v
+            node -v
+            npm -v
 
-        echo "===== CLONING REPOSITORY ====="
-        rm -rf /home/azureuser/react-app
-        git clone https://github.com/devopsinsiders/ReactTodoUIMonolith.git /home/azureuser/react-app
+            echo "===== CLONING REPOSITORY ====="
+            rm -rf /home/azureuser/react-app
+            git clone https://github.com/devopsinsiders/ReactTodoUIMonolith.git /home/azureuser/react-app
 
-        cd /home/azureuser/react-app
+            cd /home/azureuser/react-app
 
-        echo "===== INSTALLING NPM DEPENDENCIES ====="
-        npm install
+            echo "===== INSTALLING NPM DEPENDENCIES ====="
+            npm install
 
-        echo "===== BUILDING REACT APP ====="
-        npm run build
+            echo "===== BUILDING REACT APP ====="
+            npm run build
 
-        echo "===== CREATING DOCKERFILE ====="
-        cat > Dockerfile << 'DOCKERFILE'
-        FROM nginx:alpine
-        COPY build/ /usr/share/nginx/html
-        EXPOSE 80
-        CMD ["nginx", "-g", "daemon off;"]
-        DOCKERFILE
+            echo "===== CREATING DOCKERFILE ====="
+            cat > Dockerfile << 'DOCKERFILE'
+            FROM nginx:alpine
+            COPY build/ /usr/share/nginx/html
+            EXPOSE 80
+            CMD ["nginx", "-g", "daemon off;"]
+            DOCKERFILE
 
-        cat Dockerfile
+            cat Dockerfile
 
-        echo "===== REMOVING OLD CONTAINER ====="
-        sudo docker rm -f react-todo || true
+            echo "===== REMOVING OLD CONTAINER ====="
+            sudo docker rm -f react-todo || true
 
-        echo "===== BUILDING IMAGE ====="
-        sudo docker build -t react-todo:latest .
+            echo "===== BUILDING IMAGE ====="
+            sudo docker build -t react-todo:latest .
 
-        echo "===== STARTING CONTAINER ====="
-        sudo docker run -d \
-          --name react-todo \
-          -p 3000:80 \
-          --restart always \
-          react-todo:latest
+            echo "===== STARTING CONTAINER ====="
+            sudo docker run -d \
+              --name react-todo \
+              -p 3000:80 \
+              --restart always \
+              react-todo:latest
 
-        echo "===== RUNNING CONTAINERS ====="
-        sudo docker ps
-      EOF
+            echo "===== RUNNING CONTAINERS ====="
+            sudo docker ps
+          EOF
 
-  # Print final URLs
-  - name: Print Application URL
-    run: |
-      echo "Application deployed successfully"
-      echo "React App URL: http://$VM_HOST:3000"
-      echo "Nginx URL: http://$VM_HOST"
+      - name: Print Application URL
+        run: |
+          echo "Application deployed successfully"
+          echo "React App URL: http://$VM_HOST:3000"
+          echo "Nginx URL: http://$VM_HOST"
