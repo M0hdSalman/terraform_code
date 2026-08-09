@@ -12,6 +12,7 @@ deploy:
 if: ${{ github.event.workflow_run.conclusion == 'success' }}
 runs-on: ubuntu-latest
 
+```
 steps:
   - name: Download VM Info
     uses: dawidd6/action-download-artifact@v9
@@ -102,3 +103,4 @@ steps:
       echo "Application deployed successfully"
       echo "React App URL: http://$VM_HOST:3000"
       echo "Nginx URL: http://$VM_HOST"
+```
