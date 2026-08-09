@@ -1,6 +1,23 @@
 name: App Deploy
 
 on:
+  workflow_run:
+    workflows:
+      - Infra Deploy
+    types:
+      - completed
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Print test
+        run: echo "YAML is valid"
+name: App Deploy
+
+on:
 workflow_run:
 workflows:
 - Infra Deploy
@@ -13,29 +30,5 @@ if: ${{ github.event.workflow_run.conclusion == 'success' }}
 runs-on: ubuntu-latest
 
 steps:
-  - name: Download VM Info
-    uses: dawidd6/action-download-artifact@v9
-    with:
-      workflow: infra.yml
-      name: vm-info
-      path: .
-
-  - name: Load VM Variables
-    run: |
-      source vm.env
-      echo "VM_HOST=$VM_HOST" >> $GITHUB_ENV
-      echo "VM_USER=$VM_USER" >> $GITHUB_ENV
-
-  - name: Install sshpass
-    run: sudo apt-get update && sudo apt-get install -y sshpass
-
-  - name: Test SSH
-    env:
-      VM_PASSWORD: ${{ secrets.VM_PASSWORD }}
-    run: |
-      sshpass -p "$VM_PASSWORD" ssh -o StrictHostKeyChecking=no $VM_USER@$VM_HOST "echo SSH_OK"
-
-  - name: Print URL
-    run: |
-      echo "Workflow syntax is valid"
-      echo "VM = $VM_HOST"
+  - name: Print test
+    run: echo "YAML is valid"
