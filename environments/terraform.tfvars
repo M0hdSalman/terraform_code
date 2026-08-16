@@ -9,6 +9,11 @@ rgs = {
     location = "japaneast"
   }
 
+  rg3 = {
+    name     = "dev-rg3"
+    location = "japaneast"
+  }
+
 }
 
 vnets = {
