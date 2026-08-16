@@ -1,8 +1,8 @@
 rgs = {
-  rg1 = {
-    name     = "dev-rg1"
-    location = "japaneast"
-  }
+  # rg1 = {
+  #   name     = "dev-rg1"
+  #   location = "japaneast"
+  # }
 
   rg2 = {
     name     = "dev-rg2"
